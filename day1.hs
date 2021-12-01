@@ -2,10 +2,12 @@ import System.IO
 
 main :: IO ()
 main = do
-   helloFile <- openFile "input_day1.txt" ReadMode ;
-   fileContent <- hGetContents helloFile ;
+   inputFile <- openFile "input_day1.txt" ReadMode ;
+   fileContent <- hGetContents inputFile ;
    let fileLines = lines fileContent ;
+   putStrLn "Result for part 1 : " ;
    print (f (map read fileLines)) ;
+   putStrLn "Result for part 2 : " ;
    print (f (slide (map read fileLines)))
 
 f :: [Integer] -> Integer
