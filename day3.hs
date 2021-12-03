@@ -4,7 +4,7 @@ import Data.Char (digitToInt)
 
 main :: IO ()
 main = do
-   inputFile <- openFile "input_day3.txt" ReadMode ;
+   inputFile <- openFile "input_day3b.txt" ReadMode ;
    fileContent <- hGetContents inputFile ;
    let fileLines = lines fileContent ;
    putStrLn "Result for part 1 : " ;
@@ -21,24 +21,17 @@ toDec :: String -> Integer
 toDec s = toInteger (foldl (\acc x -> acc * 2 + digitToInt x) 0 s)
 
 gammatdeltaRate :: [String] -> Integer
-gammatdeltaRate l = toDec stringNb *  toDec (invert stringNb) where 
+gammatdeltaRate l = toDec (fst stringNb) *  toDec (snd stringNb) where 
 
-    stringNb :: String 
+    stringNb :: (String,String)
     stringNb = reconstruct (nbs_digits l)
 
-
-    
-    invert :: String -> String 
-    invert [] = ""
-    invert ('0' : xs) = '1' : invert xs
-    invert ('1' : xs) = '0' : invert xs
-
-    reconstruct :: [(Integer,Integer)] -> String 
-    reconstruct [] = ""
+    reconstruct :: [(Integer,Integer)] -> (String,String)
+    reconstruct [] = ("","")
     reconstruct ((nb0,nb1) : xs) 
-        | nb0 <= nb1 = '1' : reconstruct xs
-        | otherwise = '0' : reconstruct xs
-
+        | nb0 <= nb1 = ('1' : fst u, '0' : snd u)
+        | otherwise =  ('0' : fst u, '1' : snd u)
+        where u = reconstruct xs
 
     nbs_digits :: [String] -> [(Integer,Integer)]
     nbs_digits l = foldr1 (zipWith (\(a,b) (c, d) -> (a+c,b+d))) (map toDigits l)
