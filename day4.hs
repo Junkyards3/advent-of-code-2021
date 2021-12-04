@@ -62,9 +62,3 @@ parts l = (part1Aux listDraws listBoards , part2Aux listDraws listBoards)  where
             checked = map (map (check draw)) x
     part2Aux (draw : xs) lb = part2Aux xs (filter (not . isWinning) checked) where
             checked = map (map (map (check draw))) lb
-
-    
-
-    
-
-     
