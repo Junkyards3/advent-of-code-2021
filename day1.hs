@@ -2,7 +2,7 @@ import System.IO
 
 main :: IO ()
 main = do
-   inputFile <- openFile "input_day1.txt" ReadMode ;
+   inputFile <- openFile "input/input_day1.txt" ReadMode ;
    fileContent <- hGetContents inputFile ;
    let fileLines = lines fileContent ;
    putStrLn "Result for part 1 : " ;

@@ -3,7 +3,7 @@ import Data.List.Split
 
 main :: IO ()
 main = do
-   inputFile <- openFile "input_day2.txt" ReadMode ;
+   inputFile <- openFile "input/input_day2.txt" ReadMode ;
    fileContent <- hGetContents inputFile ;
    let fileLines = lines fileContent ;
    putStrLn "Result for part 1 : " ;

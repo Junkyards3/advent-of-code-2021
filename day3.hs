@@ -4,7 +4,7 @@ import Data.Char (digitToInt)
 
 main :: IO ()
 main = do
-   inputFile <- openFile "input_day3b.txt" ReadMode ;
+   inputFile <- openFile "input/input_day3.txt" ReadMode ;
    fileContent <- hGetContents inputFile ;
    let fileLines = lines fileContent ;
    putStrLn "Result for part 1 : " ;
