@@ -1,7 +1,6 @@
 import System.IO
 import Data.List.Split
 import Data.List
-import Debug.Trace 
 
 main :: IO ()
 main = do
@@ -16,8 +15,8 @@ processBingo s = map (map (\ nb -> (read nb, False)) .
 
 check :: Integer -> (Integer, Bool) -> (Integer, Bool)
 check draw (i,b) 
-    | draw == i = (i, True)
-    | otherwise = (i, b)
+    | draw == i = (i,True)
+    | otherwise = (i,b)
 
 isWinning :: [[(Integer, Bool)]] -> Bool 
 isWinning t = any (all snd) t || any (all snd) (transpose t)
@@ -25,11 +24,11 @@ isWinning t = any (all snd) t || any (all snd) (transpose t)
 computeResult :: Integer -> [Integer] -> Integer
 computeResult draw l = draw * sum l
 
-selectWinning :: Integer -> [[[(Integer, Bool)]]]  -> Maybe Integer
+selectWinning :: Integer -> [[[(Integer, Bool)]]] -> Maybe Integer
 selectWinning _ [] = Nothing
 selectWinning draw (x : xs)
     | isWinning x = 
-        Just (computeResult draw (map fst (filter (not . snd) (concat x)) ) )
+        Just (computeResult draw (map fst (filter (not . snd) (concat x))))
     | otherwise = selectWinning draw xs 
 
 parts :: String -> (Maybe Integer, Maybe Integer)
