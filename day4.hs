@@ -1,6 +1,7 @@
-import System.IO
-import Data.List.Split
-import Data.List
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+import System.IO ( openFile, hGetContents, IOMode(ReadMode) )
+import Data.List.Split ( splitOn )
+import Data.List ( transpose )
 
 main :: IO ()
 main = do

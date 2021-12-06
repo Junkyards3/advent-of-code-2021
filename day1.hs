@@ -1,4 +1,4 @@
-import System.IO
+import System.IO ( openFile, hGetContents, IOMode(ReadMode) )
 
 main :: IO ()
 main = do
