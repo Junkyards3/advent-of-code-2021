@@ -15,8 +15,6 @@ main = do
    putStrLn "Result for part 2 : " ;
    print (res fileContent 1000000) ;
 
-
-
 mat :: Matrix Integer
 mat = matrix 9 9 h where
     h :: (Int,Int) -> Integer
