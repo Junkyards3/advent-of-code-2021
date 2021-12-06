@@ -1,7 +1,8 @@
-import System.IO
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+import System.IO ( openFile, hGetContents, IOMode(ReadMode) )
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.List.Split
+import Data.List.Split ( splitOn )
 
 main :: IO ()
 main = do
