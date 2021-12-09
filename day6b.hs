@@ -4,7 +4,6 @@ import Data.Time ()
 import System.IO ( hGetContents, openFile, IOMode(ReadMode) )
 import Data.List.Split ( splitOn )
 
-
 main :: IO ()
 main = do
    inputFile <- openFile "input/input_day6.txt" ReadMode ;
