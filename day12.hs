@@ -1,13 +1,12 @@
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 import System.IO ( openFile, hGetContents, IOMode(ReadMode) )
-import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Data.List.Split (splitOn)
 import Data.Char (toLower)
 
 type Node = String
-type Graph = Map Node [Node]
+type Graph = Map.Map Node [Node]
 type Path = (Node,Set.Set Node,Bool)
 {- first component is the next node in the path,
 second is the set of small caves already visited in the path,
@@ -51,12 +50,15 @@ extendPath2 g (n,s,isDouble)
             $ g Map.! n
 
 extendPaths :: (Graph -> Path -> [Path]) -> Graph -> Int
-extendPaths f g = extendPaths' [("end",Set.singleton "end",False)] 0 where
+extendPaths f g = extendPaths' 
+    (Map.singleton ("end",Set.singleton "end",False) 1) 0 where
     fst3 :: (a, b, c) -> a
     fst3 (x, _, _) = x
 
-    extendPaths' :: [Path] -> Int -> Int
+    extendPaths' :: Map.Map Path Int -> Int -> Int
     extendPaths' buf acc
         | null buf = acc
-        | otherwise = extendPaths' (concatMap (f g) buf)
-            (acc + length (filter (\x -> fst3 x == "start") buf))
+        | otherwise = extendPaths' (Map.foldrWithKey (\k i m -> 
+            foldr (\p m' -> Map.insertWith (+) p i m') m (f g k)) Map.empty buf)
+            (acc + Map.foldr (+) 0 
+            (Map.filterWithKey (\x _ -> fst3 x == "start") buf))
