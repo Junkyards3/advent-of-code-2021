@@ -19,9 +19,9 @@ main = do
    fileContent <- hGetContents inputFile ;
    putStrLn "Result for part 1 : " ;
    let g = process $ lines fileContent ;
-   print (length $ extendPaths extendPath g) ;
+   print (extendPaths extendPath g) ;
    putStrLn "Result for part 2 : " ;
-   print (length $ extendPaths extendPath2 g) ;
+   print (extendPaths extendPath2 g) ;
 
 process :: [String] -> Graph
 process = foldr ((\[s1,s2] g -> Map.insertWith (++) s2 [s1]
@@ -34,29 +34,29 @@ isLower s = map toLower s == s
 extendPath :: Graph -> Path -> [Path]
 extendPath g (n,s,b)
     | n == "start" = []
-    | otherwise = foldr (\h -> ((h,if isLower h then h `Set.insert` s
-            else s,b):)) []
+    | otherwise = map (\h -> (h,if isLower h then h `Set.insert` s
+           else s,b))
             $ filter (`Set.notMember` s) $ g Map.! n
 
 extendPath2 :: Graph -> Path -> [Path]
 extendPath2 g (n,s,isDouble)
     | n == "start" = []
-    | isDouble =  foldr (\h -> ((h,if isLower h then h `Set.insert` s
-            else s,True):)) []
+    | isDouble =  map (\h -> (h,if isLower h then h `Set.insert` s
+           else s,True))
             $ filter (`Set.notMember` s) $ g Map.! n
-    | otherwise = foldr (\h -> ((h,if isLower h then h `Set.insert` s
-            else s, h `Set.member`s):))
-            [] $ filter (\h -> h `Set.notMember` s ||
-            (h /= "start" && h /= "end"))
+    | otherwise = map (\h -> (h,if isLower h then h `Set.insert` s
+           else s, h `Set.member` s))
+            $ filter (\h -> (h /= "start" && h /= "end") || 
+            h `Set.notMember` s )
             $ g Map.! n
 
-extendPaths :: (Graph -> Path -> [Path]) -> Graph -> [Path]
-extendPaths f g = extendPaths' [("end",Set.singleton "end",False)] [] where
+extendPaths :: (Graph -> Path -> [Path]) -> Graph -> Int
+extendPaths f g = extendPaths' [("end",Set.singleton "end",False)] 0 where
     fst3 :: (a, b, c) -> a
     fst3 (x, _, _) = x
 
-    extendPaths' :: [Path] -> [Path] -> [Path]
+    extendPaths' :: [Path] -> Int -> Int
     extendPaths' buf acc
         | null buf = acc
         | otherwise = extendPaths' (concatMap (f g) buf)
-            (acc ++ filter (\x -> fst3 x == "start") buf)
+            (acc + length (filter (\x -> fst3 x == "start") buf))
