@@ -1,25 +1,23 @@
 import System.IO ( openFile, hGetContents, IOMode(ReadMode) )
 import Data.Map (Map)
 import qualified Data.Map as Map
-import Data.List.Split (splitOn)
-import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.List.Split (splitOn)
 import Data.Char (toLower)
-import Debug.Trace
-
+import Debug.Trace 
 
 type Node = String
 type Graph = Map Node [Node]
-
+type Path = ([Node],Set.Set Node,Bool)
 main :: IO ()
 main = do
    inputFile <- openFile "input/input_day12.txt" ReadMode ;
    fileContent <- hGetContents inputFile ;
    putStrLn "Result for part 1 : " ;
    let g = process $ lines fileContent ;
-   print (Set.size $ extendPaths g) ;
+   print (length $ extendPaths extendPath g) ;
    putStrLn "Result for part 2 : " ;
-   print (Set.size $ extendPaths2 g) ;
+   print (length $ extendPaths extendPath2 g) ;
 
 process :: [String] -> Graph
 process = foldr ((\(s1,s2) g -> Map.insertWith (++) s2 [s1]
@@ -29,39 +27,37 @@ process = foldr ((\(s1,s2) g -> Map.insertWith (++) s2 [s1]
           tuplize [a,b] = (a,b)
           tuplize _ = ("","")
 
-extendPath :: Graph -> [Node] -> Set.Set [Node]
-extendPath _ [] = Set.singleton []
-extendPath g (x:xs) = foldr (\h -> Set.insert (h:x:xs))
-            Set.empty $ filter (\a -> a `notElem` xs || map toLower a /= a)
+isLower :: String -> Bool
+isLower s = map toLower s == s
+
+extendPath :: Graph -> Path -> [Path]
+extendPath _ ([],_,_) = []
+extendPath g (x:xs,s,b)
+    | x == "start" = []
+    | otherwise = foldr (\h -> ((h:x:xs,if isLower h then h `Set.insert` s
+            else s,b):)) []
+            $ filter (`Set.notMember` s) $ g Map.! x
+
+extendPath2 :: Graph -> Path -> [Path]
+extendPath2 _ ([],_,_) = []
+extendPath2 g (x:xs,s,isDouble)
+    | x == "start" = []
+    | isDouble =  foldr (\h -> ((h:x:xs,if isLower h then h `Set.insert` s
+            else s,True):)) []
+            $ filter (`Set.notMember` s) $ g Map.! x
+    | otherwise = foldr (\h -> ((h:x:xs,if isLower h then h `Set.insert` s
+            else s, h `Set.member`s):))
+            [] $ filter (\h -> h `Set.notMember` s ||
+            (h /= "start" && h /= "end"))
             $ g Map.! x
 
-extendPath2 :: Graph -> [Node] -> Set.Set [Node]
-extendPath2 _ [] = Set.singleton []
-extendPath2 g (x:xs) = foldr (\h -> Set.insert (h:x:xs))
-            Set.empty $ filter (\a -> map toLower a /= a ||
-            (a /= "start" && a /= "end" && (notElem a xs
-            || not (isDoubleSmallCave (x:xs)) )) ||
-            a `notElem` xs)
-            $ g Map.! x
+extendPaths :: (Graph -> Path -> [Path]) -> Graph -> [Path]
+extendPaths f g = extendPaths' [(["end"],Set.singleton "end",False)] [] where
+    fst3 :: (a, b, c) -> a
+    fst3 (x, _, _) = x
 
-            where
-                isDoubleSmallCave [] = False
-                isDoubleSmallCave (x:xs) = (map toLower x == x && x `elem` xs)
-                    || isDoubleSmallCave xs
-
-
-extendPaths :: Graph -> Set.Set [Node]
-extendPaths g = extendPaths' g (Set.singleton ["end"]) Set.empty where
-    extendPaths' :: Graph -> Set.Set [Node] -> Set.Set [Node] -> Set.Set [Node]
-    extendPaths' g buf acc
-        | buf `Set.isSubsetOf` acc = Set.filter (\x -> head x == "start") acc
-        | otherwise = extendPaths' g (Set.unions $ Set.map (extendPath g) buf)
-            (acc `Set.union` buf)
-
-extendPaths2 :: Graph -> Set.Set [Node]
-extendPaths2 g = extendPaths2' g (Set.singleton ["end"]) Set.empty where
-    extendPaths2' :: Graph -> Set.Set [Node] -> Set.Set [Node] -> Set.Set [Node]
-    extendPaths2' g buf acc
-        | buf `Set.isSubsetOf` acc = Set.filter (\x -> head x == "start") acc
-        | otherwise = extendPaths2' g (Set.unions $ Set.map (extendPath2 g) buf)
-            (acc `Set.union` buf)
+    extendPaths' :: [Path] -> [Path] -> [Path]
+    extendPaths' buf acc
+        | null buf = acc
+        | otherwise = extendPaths' (concatMap (f g) buf)
+            (acc ++ filter (\x -> (head . fst3) x == "start") buf)
