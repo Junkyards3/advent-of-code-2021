@@ -13,7 +13,7 @@ main = do
 f :: [Integer] -> Integer
 f [] = 0
 f [x] = 0
-f (x : (y : xs)) 
+f (x : (y : xs))
     | x < y = 1 + f (y : xs)
     | otherwise = f (y : xs)
 
