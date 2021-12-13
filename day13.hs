@@ -1,8 +1,6 @@
-
 import System.IO ( openFile, hGetContents, IOMode(ReadMode) )
 import qualified Data.Set as Set
 import Data.List.Split (splitOn)
-import Debug.Trace 
 
 type Paper = Set.Set (Int,Int)
 type Inst = (Bool,Int)
@@ -15,8 +13,7 @@ main = do
     let pi = process fileContent ;
     print $ Set.size . fst $ foldPaper pi;
     putStrLn "Result for part 2 : " ;
-    putStrLn $ affich $ foldUntil pi; 
-
+    putStrLn $ paperToString $ foldUntil pi;
 
 process :: String -> (Paper,[Inst])
 process s = (c1,c2) where
@@ -36,15 +33,9 @@ foldUntil :: (Paper,[Inst]) -> Paper
 foldUntil (p,[]) = p
 foldUntil pi = foldUntil $ foldPaper pi
 
-affich :: Paper -> String
-affich p = affichRec 0 p where
-    affichRec :: Int -> Set.Set (Int,Int) -> String
-    affichRec v p 
-        | v > Set.findMax (Set.map snd p) = ""
-        | otherwise = affichRec2 0 (Set.toAscList (Set.filter (\(a,b) -> b == v) p)) ++ '\n':affichRec (v+1) p
-    
-    affichRec2 :: Int -> [(Int,Int)] -> String 
-    affichRec2 h [] = ""
-    affichRec2 h ((a,b):xs)
-        | h == a = '#':affichRec2 (h+1) xs 
-        | otherwise = '.':affichRec2 (h+1) ((a,b):xs)
+paperToString :: Paper -> String
+paperToString p = foldr (\t s -> paperToString' t ++ '\n':s) "" [Set.toAscList $ Set.map fst $ Set.filter (\(a,b) -> i == b) p | i <- [0..5]]
+    where paperToString' :: [Int] -> String
+          paperToString' [] = ""
+          paperToString' [x] = "█"
+          paperToString' (x:y:ys) = '█':replicate (y-x-1) ' ' ++ paperToString' (y:ys)     
