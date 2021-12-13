@@ -15,13 +15,15 @@ third is a bool remembering if a small cave was visited twice -}
 main :: IO ()
 main = do
    inputFile <- openFile "input/input_day12.txt" ReadMode ;
-   fileContent <- hGetContents inputFile ;
-   putStrLn "Result for part 1 : " ;
+   fileContent <- hGetContents inputFile 
    let g = process $ lines fileContent ;
-   print (extendPaths extendPath g) ;
+   let a1 = extendPaths extendPath g;
+   let a2 = extendPaths extendPath2 g;
+   putStrLn "Result for part 1 : " ;
+   print a1 ;
    putStrLn "Result for part 2 : " ;
-   print (extendPaths extendPath2 g) ;
-
+   print a2 ;
+   
 process :: [String] -> Graph
 process = foldr ((\[s1,s2] g -> Map.insertWith (++) s2 [s1]
           $ Map.insertWith (++) s1 [s2] g) . splitOn "-")
