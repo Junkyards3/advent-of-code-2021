@@ -3,6 +3,7 @@ import qualified Data.Map as Map
 import qualified Data.Set as Set
 import Data.Char (digitToInt)
 import Debug.Trace
+import Data.Array.ST
 import Data.Array
 
 type Coordinates = (Int,Int)
@@ -43,7 +44,7 @@ distance :: Cavern -> Int -> Coordinates -> Coordinates -> InfInt
 distance cav n (ae,be) (as,bs) =  dij (Map.fromList ([ ((i, j), if (i,j) == (ae,be) then Fin 0 else Infinity) | 
     i <- [1 .. n], j <- [1..n]])) Map.! (as,bs) where
 
-    maj :: Map.Map Coordinates InfInt -> Coordinates -> Map.Map Coordinates InfInt
+    maj :: STUArray Coordinates InfInt -> Coordinates -> Map.Map Coordinates InfInt
     maj m c = foldr (\c' m' -> Map.insert c' (min (m Map.! c') (m Map.! c `add` Fin (cav ! c'))) m') m (adjacent c n)
 
     dij m = case dij' (m,Map.keysSet m) of
