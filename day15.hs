@@ -32,7 +32,7 @@ main = do
 process :: String -> (Cavern,Int)
 process s = (array ((1,1),(n,n)) [(\ (a, b) -> ((a + 1, b + 1), digitToInt $ (ls !! a) !! b))
    (i, j) |
-   i <- [0 .. length ls - 1], j <- [0 .. length ls - 1]],length ls)
+   i <- [0..length ls-1], j <- [0..length ls-1]],length ls)
         where ls = lines s
               n = length ls
 
@@ -41,13 +41,13 @@ adjacent (a,b) n = filter (\(x,y) -> x >= 1 && y >= 1 && x <= n && y <= n)
     [(a-1,b),(a+1,b),(a,b-1),(a,b+1)]
 
 distance :: Cavern -> Int -> Coordinates -> Coordinates -> InfInt
-distance cav lg (ae,be) (as,bs) = dij (Map.fromList [ (if (i,j) == (ae,be) then Fin 0 else Infinity,Set.singleton (i,j)) |
+distance cav lg (ae,be) (as,bs) = risk (Map.fromList [ (if (i,j) == (ae,be) then Fin 0 else Infinity,Set.singleton (i,j)) |
     i <- [1..lg], j <- [1..lg]]) Set.empty where
 
-    dij :: Map.Map InfInt (Set.Set Coordinates) -> Set.Set Coordinates -> InfInt
-    dij valuePath visited
+    risk :: Map.Map InfInt (Set.Set Coordinates) -> Set.Set Coordinates -> InfInt
+    risk valuePath visited
         | (as,bs) `Set.member` sMin = vMin
-        | otherwise = dij newValuePath newVisited  where
+        | otherwise = risk newValuePath newVisited  where
             ((vMin,sMin), valuePathMinRemoved) = fromJust $ Map.minViewWithKey valuePath
             expanded = Set.difference (Set.fromList $ concatMap (`adjacent` lg) sMin) visited
             newVisited = Set.union visited sMin
