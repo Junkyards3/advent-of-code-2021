@@ -5,10 +5,9 @@ import qualified Data.Bifunctor
 import Data.Char (digitToInt)
 import Data.Foldable (Foldable(foldl'))
 
-
 type Version = Int
 type Type = Int
-data Packet = Literal (Int,Version,Type) | Operator ([Packet],Version,Type) deriving (Eq,Show)
+data Packet = Literal (Int,Version,Type) | Operator ([Packet],Version,Type) deriving (Show)
 
 main :: IO ()
 main = do
