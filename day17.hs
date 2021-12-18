@@ -24,7 +24,6 @@ main = do
     print $ ym*(ym+1) `div` 2 ;
     putStrLn "Result for part 2 : " ;
     print $ length t ;
-    print t ;
 
 process :: (Pos,Pos,Pos,Pos)
 process = (70,125,-159,-121)
@@ -59,9 +58,9 @@ intersect (t1,t2) (t1p,t2p) = u1 <= u2
           u2 = min t2 t2p
 
 possibleSpeeds :: Pos -> Pos -> Pos -> Pos -> [(Speed,Speed)]
-possibleSpeeds xmin xmax ymin ymax = [(v0,w0) | v0 <- [v0min..v0max], w0 <- [w0min..w0max],
-    let {ix = intervalNX v0 xmin xmax ; (iy1,iy2) = intervalNY w0 ymin ymax} in
-    ix `intersect` iy1 || ix `intersect` iy2]
-    where
+possibleSpeeds xmin xmax ymin ymax = map (\(v0,w0,_,_) -> (v0,w0)) $ 
+    filter (\(_,_,ix,(iy1,iy2)) -> intersect ix iy1 || intersect ix iy2) lSpeeds where
+
+    lSpeeds = [ (v0,w0,intervalNX w0 xmin xmax,intervalNY w0 ymin ymax) | v0 <- [v0min..v0max], w0 <- [w0min..w0max]]
     (v0min,v0max) = intervalV0 xmin xmax
     (w0min,w0max) = intervalW0 ymin ymax
