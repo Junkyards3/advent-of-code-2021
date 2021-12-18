@@ -55,6 +55,7 @@ explode (Pair sn1 sn2 d)
     | otherwise = (Pair sn1 sn2p d, Nothing, Nothing, isExploded2)
         where (sn1p,msg11,msg12,isExploded1) = explode sn1
               (sn2p,msg21,msg22,isExploded2) = explode sn2
+              
               propagate :: SnailNum -> Maybe Int -> Bool -> SnailNum
               propagate sn Nothing _ = sn
               propagate (Regular i d) (Just im) _ = Regular (i+im) d
