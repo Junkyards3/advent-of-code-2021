@@ -1,5 +1,4 @@
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
-{-# LANGUAGE TupleSections #-}
 import System.IO ( openFile, hGetContents, IOMode(ReadMode) )
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -8,10 +7,11 @@ import Data.List (sort, intersect, sortBy)
 import Data.Matrix (toList, Matrix, fromList, fromLists, multStd, inverse, zero, mapPos, toLists)
 import Data.Ratio (numerator)
 import Data.Maybe (isJust)
+import Debug.Trace (trace)
 
 main :: IO ()
 main = do
-    inputFile <- openFile "input/input_day19b.txt" ReadMode ;
+    inputFile <- openFile "input/input_day19.txt" ReadMode ;
     fileContent <- hGetContents inputFile ;
     putStrLn "Result for parts 1 and 2 : " ;
     let t = process fileContent ;
@@ -22,6 +22,7 @@ main = do
 type Beacon = (Integer,Integer,Integer)
 type Scanner = (Integer,Integer,Integer)
 type SBMap = S.Set Beacon
+type SBMapD = M.Map Beacon (M.Map Integer Int)
 
 tuplize :: [c] -> (c, c, c)
 tuplize [x,y,z] = (x,y,z)
@@ -38,15 +39,13 @@ dist1 (x1,y1,z1) (x2,y2,z2) = abs(x1-x2) + abs(y1-y2) + abs(z1-z2)
 dist2 :: Beacon -> Beacon -> Integer
 dist2 (x1,y1,z1) (x2,y2,z2) = (x1-x2)^2 + (y1-y2)^2 + (z1-z2)^2
 
-toDistMap :: SBMap -> M.Map Beacon (S.Set (Integer,Integer))
-toDistMap sm = foldr (\(b1,b2) m' -> M.insertWith S.union b1 (S.singleton (dist1 b1 b2, dist2 b1 b2)) m') M.empty
+toDistMap :: SBMap -> SBMapD
+toDistMap sm = foldr (\(b1,b2) m' -> M.insertWith (M.unionWith (+)) b1 (M.singleton (dist1 b1 b2) 1) m') M.empty
     [(b1,b2)| b1 <- S.toList sm, b2 <- S.toList sm, b1 /= b2]
 
-mostAlikePoints :: SBMap -> SBMap -> [(Beacon,Beacon,S.Set (Integer,Integer))]
-mostAlikePoints s1 s2 = sortBy (\(_,_,s1) (_,_,s2) -> S.size s2 `compare` S.size s1)
-    [(b1,b2,(ld1 M.! b1) `S.intersection` (ld2 M.! b2)) | b1 <- S.toList s1, b2 <- S.toList s2]
-    where ld1 = toDistMap s1
-          ld2 = toDistMap s2
+mostAlikePoints :: SBMapD -> SBMapD -> [(Beacon,Beacon,Int)]
+mostAlikePoints sb1 sb2 = sortBy (\(_,_,s1) (_,_,s2) -> s2 `compare` s1)
+    [(b1,b2,M.foldr (+) 0 $ M.intersectionWith min (sb1 M.! b1) (sb2 M.! b2)) | b1 <- M.keys sb1, b2 <- M.keys sb2]
 
 getTransfo :: [(Beacon,Beacon)] -> Matrix Integer
 getTransfo l = case amm of
@@ -59,19 +58,19 @@ getTransfo l = case amm of
 applyTransfo :: Beacon -> Matrix Integer -> Beacon
 applyTransfo x m = tuplize . toList $ multStd (fromList 1 4 $ (++ [1]) $ untuplize x) m
 
-fuseTwo :: (SBMap,[Scanner]) -> (SBMap,[Scanner]) -> Maybe (SBMap,[Scanner])
+fuseTwo :: (SBMapD,[Scanner]) -> (SBMapD,[Scanner]) -> Maybe (SBMapD,[Scanner])
 fuseTwo (sb2,ls2) (sb1,ls1)
-    | all ((>= 11) . (\(_,_,c) -> length c)) (take 11 mAP) = Just (S.union sb2 $ S.map (`applyTransfo` m) sb1,
+    | all ((>= 11) . (\(_,_,c) -> c)) (take 11 mAP) = Just (M.unionWith (M.unionWith max) sb2 $ M.mapKeys (`applyTransfo` m) sb1,
         ls2 ++ map (`applyTransfo` m) ls1)
     | otherwise = Nothing
     where mAP = mostAlikePoints sb1 sb2
           m = getTransfo $ map (\(a,b,_) -> (a,b)) mAP
 
-fuseFinal :: [(SBMap,[Scanner])] -> Maybe (SBMap,[Scanner])
+fuseFinal :: [(SBMapD,[Scanner])] -> Maybe (SBMapD,[Scanner])
 fuseFinal [sb] = Just sb
 fuseFinal (sb1:rsb) = fuseFinal =<< u
     where u = fuseAux sb1 rsb
-          fuseAux :: (SBMap,[Scanner]) -> [(SBMap,[Scanner])] -> Maybe [(SBMap,[Scanner])]
+          fuseAux :: (SBMapD,[Scanner]) -> [(SBMapD,[Scanner])] -> Maybe [(SBMapD,[Scanner])]
           fuseAux sb1 [] =  Nothing
           fuseAux sb1 (sb2:rsb) = case (tfsb,tfsb2) of
             (Just fsb,_) -> Just $ fsb : rsb
@@ -82,6 +81,6 @@ fuseFinal (sb1:rsb) = fuseFinal =<< u
 
 fuseFinalLength :: [SBMap] -> Maybe (Int,Integer)
 fuseFinalLength lsb = case u of
-    Just (l,ls) -> Just (S.size l,maximum [dist1 sc1 sc2 | sc1 <- ls, sc2 <- ls])
+    Just (l,ls) -> Just (M.size l,maximum [dist1 sc1 sc2 | sc1 <- ls, sc2 <- ls])
     Nothing -> Nothing
-    where u = fuseFinal $ map (,[(0,0,0)]) lsb
+    where u = fuseFinal $ map (\sb -> (toDistMap sb,[(0,0,0)])) lsb
