@@ -7,7 +7,6 @@ import Data.List (sort, intersect, sortBy)
 import Data.Matrix (toList, Matrix, fromList, fromLists, multStd, inverse, zero, mapPos, toLists)
 import Data.Ratio (numerator)
 import Data.Maybe (isJust)
-import Debug.Trace (trace)
 
 main :: IO ()
 main = do
@@ -35,9 +34,6 @@ process s = map (S.fromList . map (tuplize . map read . splitOn ",") . tail . sp
 
 dist1 :: Beacon -> Beacon -> Integer
 dist1 (x1,y1,z1) (x2,y2,z2) = abs(x1-x2) + abs(y1-y2) + abs(z1-z2)
-
-dist2 :: Beacon -> Beacon -> Integer
-dist2 (x1,y1,z1) (x2,y2,z2) = (x1-x2)^2 + (y1-y2)^2 + (z1-z2)^2
 
 toDistMap :: SBMap -> SBMapD
 toDistMap sm = foldr (\(b1,b2) m' -> M.insertWith (M.unionWith (+)) b1 (M.singleton (dist1 b1 b2) 1) m') M.empty
