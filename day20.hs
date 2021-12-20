@@ -4,7 +4,6 @@ import qualified Data.Set as S
 import Data.Array ( Array, listArray, (!) )
 import Data.List.Split (splitOn)
 import Data.Foldable (foldl')
-import Debug.Trace (trace)
 
 main :: IO ()
 main = do
